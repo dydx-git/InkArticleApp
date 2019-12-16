@@ -1,0 +1,2 @@
+MainPackage=C:\Users\aldig\source\repos\InkArticleApp\InkArticleApp\bin\x64\Release\InkArticleApp_0.1.4.0_x64.msix
+SymbolPackage=C:\Users\aldig\source\repos\InkArticleApp\InkArticleApp\obj\x64\Release\Symbols\InkArticleApp_0.1.4.0_x64.appxsym

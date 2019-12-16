@@ -1,0 +1,95 @@
+﻿<Page
+  x:Class="InkArticleApp.MainPage"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:local="using:InkArticleApp"
+  xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d">
+
+    <SplitView x:Name="mainSplitView"
+             PaneBackground="{ThemeResource SystemControlAcrylicWindowMediumHighBrush}"
+             OpenPaneLength="256"
+             DisplayMode="Overlay">
+
+        <SplitView.Pane>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="PANE CONTENT"
+                           x:Name="PaneHeader"
+                           Margin="60,12,0,0"
+                           Style="{StaticResource BaseTextBlockStyle}" />
+            </Grid>
+        </SplitView.Pane>
+        <Grid Background="{ThemeResource SystemControlAcrylicWindowBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.60*"/>
+                <RowDefinition Height="0.40*" />
+            </Grid.RowDefinitions>
+
+            <ctrl:GraphPaperUserControl xmlns:ctrl="using:GraphPaperControl.UserControls"
+                                        x:Name="graphPaper" />
+
+            <Canvas x:Name="recognitionCanvas" />
+            <InkCanvas x:Name="inkCanvas" />
+
+            <InkToolbar HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        TargetInkCanvas="{Binding ElementName=inkCanvas}"
+                        Background="{ThemeResource SystemControlAcrylicWindowMediumHighBrush}" />
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.82*" />
+                    <RowDefinition Height="0.18*" />
+                </Grid.RowDefinitions>
+                
+                <RichEditBox x:Name="editor"
+                             HorizontalAlignment="Stretch"
+                             VerticalAlignment="Stretch"
+                             local:RichEditBoxExtension.PlainText="{x:Bind TextBoxLogic.PlainText, Mode=OneWay}"/>
+
+                <StackPanel Orientation="Horizontal"
+                            Grid.Row="1"
+                            Margin="10"
+                            Spacing="10">
+                    <TextBlock x:Name="findBoxLabel"
+                               Text="Find:"
+                               VerticalAlignment="Center" />
+                    <TextBox x:Name="findBox"
+                             PlaceholderText="Enter search text"
+                             VerticalAlignment="Center"
+                             TextChanged="{x:Bind FinderLogic.FindBoxHighlightMatches}"
+                             GotFocus="{x:Bind FinderLogic.FindBoxHighlightMatches}"
+                             LostFocus="{x:Bind FinderLogic.FindBoxRemoveHighlights}"
+                             Text="{x:Bind FinderLogic.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <Button x:Name="SaveButton"
+                            AutomationProperties.Name="Save file"
+                            ToolTipService.ToolTip="Save file"
+                            Click="{x:Bind TextBoxLogic.SaveToTextFile}">
+                        <Button.Content>
+                            <SymbolIcon Symbol="Save" />
+                        </Button.Content>
+                    </Button>
+                    <Button x:Name="textImageButton"
+                            AutomationProperties.Name="Find Image"
+                            ToolTipService.ToolTip="Find Image"
+                            Click="textImageButton_Click">
+                        <Button.Content>
+                            <SymbolIcon Symbol="Pictures" />
+                        </Button.Content>
+                    </Button>
+                </StackPanel>
+            </Grid>
+            <TextBlock Text="Default" x:Name="NewTextBlock"/>
+
+        </Grid>
+    </SplitView>
+
+
+</Page>
