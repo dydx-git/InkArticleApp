@@ -20,6 +20,14 @@ namespace InkArticleApp
 
         private string _text;
         private RichEditTextDocument _document;
+        private string _processingLabel;
+
+        public string ProcessingLabel
+        {
+            get { return _processingLabel; }
+            set { Set(ref _processingLabel, value); }
+        }
+
 
         public string Text
         {

@@ -53,12 +53,13 @@
                              VerticalAlignment="Stretch"
                              local:RichEditBoxExtension.PlainText="{x:Bind TextBoxLogic.PlainText, Mode=OneWay}"/>
 
+
                 <StackPanel Orientation="Horizontal"
                             Grid.Row="1"
                             Margin="10"
                             Spacing="10">
                     <TextBlock x:Name="findBoxLabel"
-                               Text="Find:"
+                               Text="{x:Bind FinderLogic.ProcessingLabel, Mode=OneWay}"
                                VerticalAlignment="Center" />
                     <TextBox x:Name="findBox"
                              PlaceholderText="Enter search text"
@@ -86,8 +87,6 @@
                     </Button>
                 </StackPanel>
             </Grid>
-            <TextBlock Text="Default" x:Name="NewTextBlock"/>
-
         </Grid>
     </SplitView>
 

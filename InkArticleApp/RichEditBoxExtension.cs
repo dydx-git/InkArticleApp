@@ -56,7 +56,6 @@ namespace InkArticleApp
                     break;
 
                 default:
-                    Debug.Assert(false, "Unknown state");
                     SetState(o, RichEditChangeState.Idle);
                     break;
             }
