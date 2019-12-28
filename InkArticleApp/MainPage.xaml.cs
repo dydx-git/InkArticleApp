@@ -26,21 +26,21 @@
     {
         public RichTextBoxLogic TextBoxLogic { get; }
         public FindBoxLogic FinderLogic { get; }
+        ProcessAnimator randomTextAnimation { get; }
         RichEditTextDocument document => (RichEditTextDocument)editor.Document;
 
         InkPresenter inkPresenter;
         InkAnalyzer inkAnalyzer;
         DispatcherTimer dispatcherTimer;
         InkAnalysisResult inkAnalysisResults;
+        
 
         string RecognizedTextDisplay;
 
-        Random random = new Random();
+        //string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        //public string animatedWord { get; set; }
 
-        string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        public string animatedWord { get; set; }
-
-        DispatcherTimer AnimatorTimer;
+        //DispatcherTimer AnimatorTimer;
 
         public MainPage()
         {
@@ -60,14 +60,14 @@
             inkAnalyzer = new InkAnalyzer();
             dispatcherTimer = new DispatcherTimer();
             dispatcherTimer.Tick += DispatcherTimer_Tick;
+            randomTextAnimation = new ProcessAnimator();
 
-            AnimatorTimer = new DispatcherTimer();
-            AnimatorTimer.Tick += AnimatorTimer_Tick;
+            //AnimatorTimer = new DispatcherTimer();
+            //AnimatorTimer.Tick += AnimatorTimer_Tick;
 
             // We perform analysis when there has been a change to the
             // ink presenter and the user has been idle for 500ms.
             dispatcherTimer.Interval = TimeSpan.FromMilliseconds(500);
-            AnimatorTimer.Interval = TimeSpan.FromMilliseconds(200);
 
             TextBoxLogic = new RichTextBoxLogic(document);
             FinderLogic = new FindBoxLogic(document);
@@ -76,24 +76,24 @@
 
         private void StrokeInput_StrokeEnded(InkStrokeInput sender, PointerEventArgs args)
         {
-            FinderLogic.ProcessingLabel = "Find";
+            findBoxLabel.Text = "Find";
         }
 
-        private void AnimatorTimer_Tick(object sender, object e)
-        {
-            AnimatorTimer.Stop();
-            AnimatorTimer.Interval = TimeSpan.FromMilliseconds(random.Next(100));
+        //private void AnimatorTimer_Tick(object sender, object e)
+        //{
+        //    AnimatorTimer.Stop();
+        //    AnimatorTimer.Interval = TimeSpan.FromMilliseconds(random.Next(100));
 
-            char[] alphabets = chars.ToCharArray();
+        //    char[] alphabets = chars.ToCharArray();
 
-            FisherYatesShuffler.Shuffle(alphabets);
+        //    FisherYatesShuffler.Shuffle(alphabets);
 
-            animatedWord = new String(alphabets.Take(random.Next(6)).ToArray());
+        //    animatedWord = new String(alphabets.Take(random.Next(6)).ToArray());
 
-            FinderLogic.ProcessingLabel = animatedWord;
+        //    FinderLogic.ProcessingLabel = animatedWord;
 
-            AnimatorTimer.Start();
-        }
+        //    AnimatorTimer.Start();
+        //}
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -119,7 +119,7 @@
         {
             // We don't want to process ink while a stroke is being drawn
             dispatcherTimer.Stop();
-            AnimatorTimer.Start();
+            randomTextAnimation.StartTimer();
         }
 
         private void InkPresenter_StrokesErased(InkPresenter sender, InkStrokesErasedEventArgs args)
@@ -130,7 +130,8 @@
         private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
             dispatcherTimer.Stop();
-            AnimatorTimer.Stop();
+            randomTextAnimation.StopTimer();
+            //AnimatorTimer.Stop();
             inkAnalyzer.AddDataForStrokes(args.Strokes);
             //RecognizeText();
             dispatcherTimer.Start();
