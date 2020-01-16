@@ -34,8 +34,7 @@
 
             <ctrl:GraphPaperUserControl xmlns:ctrl="using:GraphPaperControl.UserControls"
                                         x:Name="graphPaper" />
-
-            <Canvas x:Name="recognitionCanvas" />
+            
             <InkCanvas x:Name="inkCanvas" />
 
             <InkToolbar HorizontalAlignment="Right"

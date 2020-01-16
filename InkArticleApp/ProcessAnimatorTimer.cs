@@ -7,7 +7,7 @@ using Windows.UI.Xaml;
 
 namespace InkArticleApp
 {
-    public class ProcessAnimator : ObservableObject
+    public class ProcessAnimatorTimer : ObservableObject
     {
         
 
@@ -32,7 +32,7 @@ namespace InkArticleApp
             set { Set(ref _duration, value); }
         }
 
-        public ProcessAnimator()
+        public ProcessAnimatorTimer()
         {
             this.Duration = 200;
         }

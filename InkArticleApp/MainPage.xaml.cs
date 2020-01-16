@@ -33,7 +33,7 @@
         InkAnalyzer inkAnalyzer;
         DispatcherTimer dispatcherTimer;
         InkAnalysisResult inkAnalysisResults;
-        
+        InkEngineDriver driver;
 
         string RecognizedTextDisplay;
 
@@ -50,7 +50,6 @@
             inkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
             inkPresenter.StrokesErased += InkPresenter_StrokesErased;
             inkPresenter.StrokeInput.StrokeStarted += StrokeInput_StrokeStarted;
-            inkPresenter.StrokeInput.StrokeEnded += StrokeInput_StrokeEnded;
 
             inkPresenter.InputDeviceTypes =
                 CoreInputDeviceTypes.Pen |
@@ -72,11 +71,7 @@
             TextBoxLogic = new RichTextBoxLogic(document);
             FinderLogic = new FindBoxLogic(document);
 
-        }
-
-        private void StrokeInput_StrokeEnded(InkStrokeInput sender, PointerEventArgs args)
-        {
-            findBoxLabel.Text = "Find";
+            driver = new InkEngineDriver(ref findBoxLabel);
         }
 
         //private void AnimatorTimer_Tick(object sender, object e)
