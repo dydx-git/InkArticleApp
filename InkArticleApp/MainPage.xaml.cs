@@ -26,52 +26,27 @@
     {
         public RichTextBoxLogic TextBoxLogic { get; }
         public FindBoxLogic FinderLogic { get; }
-        ProcessAnimator randomTextAnimation { get; }
+        ProcessAnimatorTimer randomTextAnimation { get; }
+        InkEngineDriver driver { get; }
         RichEditTextDocument document => (RichEditTextDocument)editor.Document;
 
         InkPresenter inkPresenter;
-        InkAnalyzer inkAnalyzer;
-        DispatcherTimer dispatcherTimer;
-        InkAnalysisResult inkAnalysisResults;
-        InkEngineDriver driver;
-
-        string RecognizedTextDisplay;
-
-        //string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        //public string animatedWord { get; set; }
-
-        //DispatcherTimer AnimatorTimer;
 
         public MainPage()
         {
             this.InitializeComponent();
 
             inkPresenter = inkCanvas.InkPresenter;
-            inkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
-            inkPresenter.StrokesErased += InkPresenter_StrokesErased;
-            inkPresenter.StrokeInput.StrokeStarted += StrokeInput_StrokeStarted;
 
             inkPresenter.InputDeviceTypes =
                 CoreInputDeviceTypes.Pen |
                 CoreInputDeviceTypes.Mouse |
                 CoreInputDeviceTypes.Touch;
 
-            inkAnalyzer = new InkAnalyzer();
-            dispatcherTimer = new DispatcherTimer();
-            dispatcherTimer.Tick += DispatcherTimer_Tick;
-            randomTextAnimation = new ProcessAnimator();
-
-            //AnimatorTimer = new DispatcherTimer();
-            //AnimatorTimer.Tick += AnimatorTimer_Tick;
-
-            // We perform analysis when there has been a change to the
-            // ink presenter and the user has been idle for 500ms.
-            dispatcherTimer.Interval = TimeSpan.FromMilliseconds(500);
-
             TextBoxLogic = new RichTextBoxLogic(document);
             FinderLogic = new FindBoxLogic(document);
 
-            driver = new InkEngineDriver(ref findBoxLabel);
+            driver = new InkEngineDriver(ref findBoxLabel, inkPresenter);
         }
 
         //private void AnimatorTimer_Tick(object sender, object e)
@@ -88,96 +63,89 @@
         //    FinderLogic.ProcessingLabel = animatedWord;
 
         //    AnimatorTimer.Start();
+        ////}
+
+        //private async void DispatcherTimer_Tick(object sender, object e)
+        //{
+        //    dispatcherTimer.Stop();
+        //    if (!inkAnalyzer.IsAnalyzing)
+        //    {
+        //        inkAnalysisResults = await inkAnalyzer.AnalyzeAsync();
+        //        RecognizeText();
+        //    }
+        //    else
+        //    {
+        //        // Ink analyzer is busy. Wait a while and try again.
+        //        dispatcherTimer.Start();
+        //    }
         //}
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            dispatcherTimer.Stop();
-        }
+        //private void StrokeInput_StrokeStarted(InkStrokeInput sender, Windows.UI.Core.PointerEventArgs args)
+        //{
+        //    // We don't want to process ink while a stroke is being drawn
+        //    dispatcherTimer.Stop();
+        //    randomTextAnimation.StartTimer();
+        //}
 
-        private async void DispatcherTimer_Tick(object sender, object e)
-        {
-            dispatcherTimer.Stop();
-            if (!inkAnalyzer.IsAnalyzing)
-            {
-                inkAnalysisResults = await inkAnalyzer.AnalyzeAsync();
-                RecognizeText();
-            }
-            else
-            {
-                // Ink analyzer is busy. Wait a while and try again.
-                dispatcherTimer.Start();
-            }
-        }
+        //private void InkPresenter_StrokesErased(InkPresenter sender, InkStrokesErasedEventArgs args)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        private void StrokeInput_StrokeStarted(InkStrokeInput sender, Windows.UI.Core.PointerEventArgs args)
-        {
-            // We don't want to process ink while a stroke is being drawn
-            dispatcherTimer.Stop();
-            randomTextAnimation.StartTimer();
-        }
-
-        private void InkPresenter_StrokesErased(InkPresenter sender, InkStrokesErasedEventArgs args)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
-        {
-            dispatcherTimer.Stop();
-            randomTextAnimation.StopTimer();
-            //AnimatorTimer.Stop();
-            inkAnalyzer.AddDataForStrokes(args.Strokes);
-            //RecognizeText();
-            dispatcherTimer.Start();
+        //private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
+        //{
+        //    dispatcherTimer.Stop();
+        //    randomTextAnimation.StopTimer();
+        //    //AnimatorTimer.Stop();
+        //    inkAnalyzer.AddDataForStrokes(args.Strokes);
+        //    //RecognizeText();
+        //    dispatcherTimer.Start();
             
-        }
+        //}
 
-        private void RecognizeText()
-        {
-            // Have ink strokes on the canvas changed?
-            //if (inkAnalysisResults.Status == InkAnalysisStatus.Updated)
-            //{
-            // Find all strokes that are recognized as handwriting and 
-            // create a corresponding ink analysis InkWord node.
-            var inkwordNodes =
-                    inkAnalyzer.AnalysisRoot.FindNodes(
-                        InkAnalysisNodeKind.Line);
+        //private void RecognizeText()
+        //{
+        //    // Have ink strokes on the canvas changed?
+        //    //if (inkAnalysisResults.Status == InkAnalysisStatus.Updated)
+        //    //{
+        //    // Find all strokes that are recognized as handwriting and 
+        //    // create a corresponding ink analysis InkWord node.
+        //    var inkwordNodes =
+        //            inkAnalyzer.AnalysisRoot.FindNodes(
+        //                InkAnalysisNodeKind.Line);
 
-            // Iterate through each InkWord node.
-            // Draw primary recognized text on recognitionCanvas 
-            // (for this example, we ignore alternatives), and delete 
-            // ink analysis data and recognized strokes.
-                if (inkwordNodes.Count == 0)
-                {
-                    return;
-                }
-                foreach (InkAnalysisLine node in inkwordNodes)
-                {
-                    // Draw a TextBlock object on the recognitionCanvas.
-                    DrawText(node.RecognizedText, node.BoundingRect);
+        //    // Iterate through each InkWord node.
+        //    // Draw primary recognized text on recognitionCanvas 
+        //    // (for this example, we ignore alternatives), and delete 
+        //    // ink analysis data and recognized strokes.
+        //        if (inkwordNodes.Count == 0)
+        //        {
+        //            return;
+        //        }
+        //        foreach (InkAnalysisLine node in inkwordNodes)
+        //        {
+        //            // Draw a TextBlock object on the recognitionCanvas.
+        //            DrawText(node.RecognizedText, node.BoundingRect);
 
-                    foreach (var strokeId in node.GetStrokeIds())
-                    {
-                        var stroke =
-                            inkCanvas.InkPresenter.StrokeContainer.GetStrokeById(strokeId);
-                        stroke.Selected = true;
-                    }
-                    inkAnalyzer.RemoveDataForStrokes(node.GetStrokeIds());
-                }
-            //}
-        }
+        //            foreach (var strokeId in node.GetStrokeIds())
+        //            {
+        //                var stroke =
+        //                    inkCanvas.InkPresenter.StrokeContainer.GetStrokeById(strokeId);
+        //                stroke.Selected = true;
+        //            }
+        //            inkAnalyzer.RemoveDataForStrokes(node.GetStrokeIds());
+        //        }
+        //    //}
+        //}
 
         private void textImageButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            RecognizeText();
+            //RecognizeText();
         }
 
         private void DrawText(string recognizedText, Rect boundingRect)
         {
-            RecognizedTextDisplay = recognizedText;
-            RecognizedTextDisplay += " ";
-            TextBoxLogic.PlainText += RecognizedTextDisplay;
+            
         }
     }
 }

@@ -50,7 +50,7 @@
                 <RichEditBox x:Name="editor"
                              HorizontalAlignment="Stretch"
                              VerticalAlignment="Stretch"
-                             local:RichEditBoxExtension.PlainText="{x:Bind TextBoxLogic.PlainText, Mode=OneWay}"/>
+                             local:RichEditBoxExtension.PlainText="{x:Bind driver.recognizedText, Mode=OneWay}"/>
 
 
                 <StackPanel Orientation="Horizontal"

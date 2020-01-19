@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,16 +9,36 @@ using Windows.UI.Xaml;
 
 namespace InkArticleApp
 {
-    class RecognitionProcessTimer
+    class RecognitionProcessTimer : ObservableObject
     {
         DispatcherTimer analysisProcessTimer;
         InkAnalyzer _inkAnalyzer;
         InkAnalysisResult inkAnalysisResults;
+        RecognitionEngine Engine;
+
+        private string _recognizedText;
+
+        public string RecognizedText
+        {
+            get { return _recognizedText; }
+            set { Set(ref _recognizedText, value); }
+        }
+
         public int Duration { get; set; }
+
+        private InkAnalysisLine _node;
+
+        public InkAnalysisLine Node
+        {
+            get { return _node; }
+            set { Set(ref _node, value); }
+        }
+
         public RecognitionProcessTimer(InkAnalyzer inkAnalyzer)
         {
             this.Duration = 500;
             _inkAnalyzer = inkAnalyzer;
+            Engine = new RecognitionEngine(_inkAnalyzer);
         }
 
         public void StartTimer()
@@ -33,7 +54,6 @@ namespace InkArticleApp
             if (analysisProcessTimer != null)
             {
                 analysisProcessTimer.Stop();
-                analysisProcessTimer = null;
             }
         }
 
@@ -43,7 +63,14 @@ namespace InkArticleApp
             if (!_inkAnalyzer.IsAnalyzing)
             {
                 inkAnalysisResults = await _inkAnalyzer.AnalyzeAsync();
-                RecognizeText();
+                if (inkAnalysisResults.Status == InkAnalysisStatus.Updated)
+                {
+                    Node = Engine.Recognize();
+                    if (Node != null)
+                    {
+                        RecognizedText = Node.RecognizedText;
+                    }
+                }
             }
             else
             {

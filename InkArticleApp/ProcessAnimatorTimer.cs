@@ -50,7 +50,6 @@ namespace InkArticleApp
             if (AnimatorTimer != null)
             {
                 AnimatorTimer.Stop();
-                AnimatorTimer = null;
             }
         }
 
