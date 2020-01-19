@@ -8,7 +8,7 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource SystemControlChromeHighAcrylicWindowMediumBrush}" >
-        <Canvas>
+        <Canvas x:Name="MainCanvas">
             <Grid Canvas.ZIndex="100">
                 <ctrl:GraphPaperUserControl xmlns:ctrl="using:GraphPaperControl.UserControls"
                                             x:Name="graphPaper" />
@@ -16,19 +16,30 @@
                 <InkCanvas x:Name="inkCanvas"
                            ManipulationMode="Scale"
                            Height="1000"
-                           Width="1000"/>
+                           Width="3000"/>
+                <TextBlock x:Name="processingLabel"
+                           VerticalAlignment="Top"
+                           HorizontalAlignment="Right" 
+                           />
+                <Button Content="Click!"
+                        VerticalAlignment="Bottom" 
+                        HorizontalAlignment="Left" 
+                        Click="{x:Bind driver.PassiveRecognition}"/>
+                <Button Content="Write" Click="Button_Click" />
             </Grid>
-            <Grid Canvas.ZIndex="0"
+            <Grid 
+                  x:Name="TextGrid"
+                  Canvas.ZIndex="0"
                   Background="{ThemeResource SystemControlChromeHighAcrylicWindowMediumBrush}">
                 <TextBlock x:Name="editor"
                              HorizontalAlignment="Stretch"
                              VerticalAlignment="Stretch"
                              Height="200"
                              Width="200"
-                             Text="Yoyo!sdsddddddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadd"
-                           TextWrapping="Wrap"
+                             Text="{x:Bind driver.recognizedText, Mode=OneWay}"
+                             TextWrapping="Wrap"
                              LineHeight="38"
-                           FontSize="20"
+                             FontSize="20"
                              />
             </Grid>
         </Canvas>

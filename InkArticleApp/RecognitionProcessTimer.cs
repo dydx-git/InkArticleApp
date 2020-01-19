@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Input.Inking;
 using Windows.UI.Input.Inking.Analysis;
 using Windows.UI.Xaml;
 
@@ -12,8 +13,8 @@ namespace InkArticleApp
     class RecognitionProcessTimer : ObservableObject
     {
         DispatcherTimer analysisProcessTimer;
+        InkPresenter _inkPresenter;
         InkAnalyzer _inkAnalyzer;
-        InkAnalysisResult inkAnalysisResults;
         RecognitionEngine Engine;
 
         private string _recognizedText;
@@ -26,19 +27,12 @@ namespace InkArticleApp
 
         public int Duration { get; set; }
 
-        private InkAnalysisLine _node;
-
-        public InkAnalysisLine Node
-        {
-            get { return _node; }
-            set { Set(ref _node, value); }
-        }
-
-        public RecognitionProcessTimer(InkAnalyzer inkAnalyzer)
+        public RecognitionProcessTimer(InkPresenter inkPresenter, InkAnalyzer inkAnalyzer)
         {
             this.Duration = 500;
+            _inkPresenter = inkPresenter;
             _inkAnalyzer = inkAnalyzer;
-            Engine = new RecognitionEngine(_inkAnalyzer);
+            Engine = new RecognitionEngine(_inkPresenter, _inkAnalyzer);
         }
 
         public void StartTimer()
@@ -62,15 +56,7 @@ namespace InkArticleApp
             analysisProcessTimer.Stop();
             if (!_inkAnalyzer.IsAnalyzing)
             {
-                inkAnalysisResults = await _inkAnalyzer.AnalyzeAsync();
-                if (inkAnalysisResults.Status == InkAnalysisStatus.Updated)
-                {
-                    Node = Engine.Recognize();
-                    if (Node != null)
-                    {
-                        RecognizedText = Node.RecognizedText;
-                    }
-                }
+                RecognizedText = await Engine.StartRecognitionAsync();
             }
             else
             {

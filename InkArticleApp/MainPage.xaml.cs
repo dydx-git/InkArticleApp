@@ -46,7 +46,9 @@
             TextBoxLogic = new RichTextBoxLogic(document);
             FinderLogic = new FindBoxLogic(document);
 
-            driver = new InkEngineDriver(ref findBoxLabel, inkPresenter);
+            Type callerType = typeof(MainPage);
+
+            driver = new InkEngineDriver(callerType, ref findBoxLabel, inkPresenter);
         }
 
         //private void AnimatorTimer_Tick(object sender, object e)

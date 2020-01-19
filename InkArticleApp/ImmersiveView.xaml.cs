@@ -5,6 +5,8 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
+using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -22,12 +24,29 @@ namespace InkArticleApp
     /// </summary>
     public sealed partial class ImmersiveView : Page
     {
+        InkEngineDriver driver { get; }
+        InkPresenter inkPresenter;
+        IReadOnlyList<InkStroke> inkStrokes;
         public ImmersiveView()
         {
             this.InitializeComponent();
-            inkCanvas.InkPresenter.InputDeviceTypes =
-                Windows.UI.Core.CoreInputDeviceTypes.Touch | Windows.UI.Core.CoreInputDeviceTypes.Pen
-                | Windows.UI.Core.CoreInputDeviceTypes.Mouse;
+
+            inkPresenter = inkCanvas.InkPresenter;
+
+            inkPresenter.InputDeviceTypes =
+                CoreInputDeviceTypes.Pen |
+                CoreInputDeviceTypes.Mouse |
+                CoreInputDeviceTypes.Touch;
+
+            Type callerType = typeof(ImmersiveView);
+
+            driver = new InkEngineDriver(callerType, ref processingLabel, inkPresenter);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            editor.Focus(FocusState.Keyboard);
+            inkCanvas.Visibility = Visibility.Collapsed;
         }
     }
 }
