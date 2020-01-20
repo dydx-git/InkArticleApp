@@ -32,6 +32,9 @@
 
         InkPresenter inkPresenter;
 
+        // Icon for calligraphic pen custom button.
+        Symbol CalligraphicPenIcon = (Symbol)0xEDFB;
+
         public MainPage()
         {
             this.InitializeComponent();

@@ -1,24 +1,28 @@
-﻿<Page
-  x:Class="InkArticleApp.MainPage"
-  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:local="using:InkArticleApp"
-  xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
-  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  mc:Ignorable="d">
+﻿<Page x:Class="InkArticleApp.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:InkArticleApp"
+      xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d">
+
+    <!-- Set up locally defined resource dictionary. -->
+    <Page.Resources>
+        <local:CalligraphicPen x:Key="CalligraphicPen" />
+    </Page.Resources>
 
     <SplitView x:Name="mainSplitView"
-             PaneBackground="{ThemeResource SystemControlAcrylicWindowMediumHighBrush}"
-             OpenPaneLength="256"
-             DisplayMode="Overlay">
+               PaneBackground="{ThemeResource SystemControlAcrylicWindowMediumHighBrush}"
+               OpenPaneLength="256"
+               DisplayMode="Overlay">
 
         <SplitView.Pane>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock Text="PANE CONTENT"
                            x:Name="PaneHeader"
@@ -28,29 +32,54 @@
         </SplitView.Pane>
         <Grid Background="{ThemeResource SystemControlAcrylicWindowBrush}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="0.60*"/>
+                <RowDefinition Height="0.60*" />
                 <RowDefinition Height="0.40*" />
             </Grid.RowDefinitions>
 
             <ctrl:GraphPaperUserControl xmlns:ctrl="using:GraphPaperControl.UserControls"
                                         x:Name="graphPaper" />
-            
+
             <InkCanvas x:Name="inkCanvas" />
 
             <InkToolbar HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         TargetInkCanvas="{Binding ElementName=inkCanvas}"
-                        Background="{ThemeResource SystemControlAcrylicWindowMediumHighBrush}" />
+                        Background="{ThemeResource SystemControlAcrylicWindowMediumHighBrush}">
+                <InkToolbarBallpointPenButton Name="penButton" />
+                <InkToolbarCustomPenButton x:Name="calligraphyPen"
+                                           CustomPen="{StaticResource CalligraphicPen}"
+                                           Palette="{x:Bind penButton.Palette, Mode=OneWay}"
+                                           SelectedBrushIndex="0"
+                                           MinStrokeWidth="4"
+                                           MaxStrokeWidth="10"
+                                           ToolTipService.ToolTip="Calligraphy pen"
+                                           >
+                    <SymbolIcon Symbol="{x:Bind CalligraphicPenIcon}" />
+                    <InkToolbarCustomPenButton.ConfigurationContent>
+                        <InkToolbarPenConfigurationControl />
+                    </InkToolbarCustomPenButton.ConfigurationContent>
+                </InkToolbarCustomPenButton>
+                <!--<InkToolbarCustomToolButton x:Name="toolButtonLasso"
+                                            Click="ToolButton_Lasso"
+                                            ToolTipService.ToolTip="Selection tool">
+                    <SymbolIcon Symbol="{x:Bind LassoSelect}" />
+                </InkToolbarCustomToolButton>
+                <InkToolbarCustomToggleButton x:Name="toggleButton"
+                                              Click="Toggle_Custom"
+                                              ToolTipService.ToolTip="Touch Writing">
+                    <SymbolIcon Symbol="{x:Bind TouchWriting}" />
+                </InkToolbarCustomToggleButton>-->
+            </InkToolbar>
             <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="0.82*" />
                     <RowDefinition Height="0.18*" />
                 </Grid.RowDefinitions>
-                
+
                 <RichEditBox x:Name="editor"
                              HorizontalAlignment="Stretch"
                              VerticalAlignment="Stretch"
-                             local:RichEditBoxExtension.PlainText="{x:Bind driver.recognizedText, Mode=OneWay}"/>
+                             local:RichEditBoxExtension.PlainText="{x:Bind driver.recognizedText, Mode=OneWay}" />
 
 
                 <StackPanel Orientation="Horizontal"
@@ -66,7 +95,7 @@
                              TextChanged="{x:Bind FinderLogic.FindBoxHighlightMatches}"
                              GotFocus="{x:Bind FinderLogic.FindBoxHighlightMatches}"
                              LostFocus="{x:Bind FinderLogic.FindBoxRemoveHighlights}"
-                             Text="{x:Bind FinderLogic.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{x:Bind FinderLogic.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                     <Button x:Name="SaveButton"
                             AutomationProperties.Name="Save file"

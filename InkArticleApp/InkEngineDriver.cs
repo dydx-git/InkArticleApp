@@ -4,15 +4,22 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Input.Inking.Analysis;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 
 namespace InkArticleApp
 {
     class InkEngineDriver : ObservableObject
     {
+        private bool isBoundRect;
+        private Polyline lasso;
+        private Rect boundingRect;
+        Canvas _selectionCanvas;
         InkPresenter _inkPresenter;
         InkAnalyzer inkAnalyzer;
         private TextBlock _animationLabel;
@@ -29,7 +36,7 @@ namespace InkArticleApp
         }
 
 
-        public InkEngineDriver(Type callerType, ref TextBlock animationLabel, InkPresenter inkPresenter)
+        public InkEngineDriver(Type callerType, ref TextBlock animationLabel, InkPresenter inkPresenter, Canvas selectionCanvas = null)
         {
             _callerType = callerType;
             if (_callerType == typeof(MainPage))
@@ -40,6 +47,7 @@ namespace InkArticleApp
             {
                 IsLiveRecognitionOn = false;
             }
+            _selectionCanvas = selectionCanvas;
             _inkPresenter = inkPresenter;
             _animationLabel = animationLabel;
             _inkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
@@ -61,11 +69,18 @@ namespace InkArticleApp
         {
             recognitionTimer.StopTimer();
             randomTextAnimation.StartTimer();
+            ClearSelection();
+            _inkPresenter.UnprocessedInput.PointerPressed -= UnprocessedInput_PointerPressed;
+            _inkPresenter.UnprocessedInput.PointerMoved -= UnprocessedInput_PointerMoved;
+            _inkPresenter.UnprocessedInput.PointerReleased -= UnprocessedInput_PointerReleased;
         }
 
         private void InkPresenter_StrokesErased(InkPresenter sender, InkStrokesErasedEventArgs args)
         {
-            throw new NotImplementedException();
+            ClearSelection();
+            _inkPresenter.UnprocessedInput.PointerPressed -= UnprocessedInput_PointerPressed;
+            _inkPresenter.UnprocessedInput.PointerMoved -= UnprocessedInput_PointerMoved;
+            _inkPresenter.UnprocessedInput.PointerReleased -= UnprocessedInput_PointerReleased;
         }
 
         private async void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
@@ -77,6 +92,41 @@ namespace InkArticleApp
                 inkAnalyzer.AddDataForStrokes(args.Strokes);
                 ActiveRecognition();
             }
+            else
+            {
+                inkAnalyzer.AddDataForStrokes(args.Strokes);
+            }
+        }
+
+        private void UnprocessedInput_PointerPressed(InkUnprocessedInput sender, PointerEventArgs args)
+        {
+            lasso = new Polyline()
+            {
+                Stroke = new SolidColorBrush(Windows.UI.Colors.Blue),
+                StrokeThickness = 1,
+                StrokeDashArray = new DoubleCollection() { 5, 2 },
+            };
+
+            lasso.Points.Add(args.CurrentPoint.RawPosition);
+            _selectionCanvas.Children.Add(lasso);
+            isBoundRect = true;
+        }
+
+        private void UnprocessedInput_PointerMoved(InkUnprocessedInput sender, PointerEventArgs args)
+        {
+            if (isBoundRect)
+            {
+                lasso.Points.Add(args.CurrentPoint.RawPosition);
+            }
+        }
+
+        private void UnprocessedInput_PointerReleased(InkUnprocessedInput sender, PointerEventArgs args)
+        {
+            lasso.Points.Add(args.CurrentPoint.RawPosition);
+
+            boundingRect = _inkPresenter.StrokeContainer.SelectWithPolyLine(lasso.Points);
+            isBoundRect = false;
+            DrawBoundingRect();
         }
 
         private async void ActiveRecognition()
@@ -106,6 +156,85 @@ namespace InkArticleApp
             {
                 Debug.WriteLine("Not Recognized");
             }
+        }
+
+        private void ClearDrawnBoundingRect()
+        {
+            if (_selectionCanvas.Children.Count > 0)
+            {
+                _selectionCanvas.Children.Clear();
+                boundingRect = Rect.Empty;
             }
+        }
+        private void DrawBoundingRect()
+        {
+            _selectionCanvas.Children.Clear();
+
+            if (boundingRect.Width <= 0 || boundingRect.Height <= 0)
+            {
+                return;
+            }
+
+            var rectangle = new Rectangle()
+            {
+                Stroke = new SolidColorBrush(Windows.UI.Colors.Blue),
+                StrokeThickness = 1,
+                StrokeDashArray = new DoubleCollection() { 5, 2 },
+                Width = boundingRect.Width,
+                Height = boundingRect.Height
+            };
+
+            Canvas.SetLeft(rectangle, boundingRect.X);
+            Canvas.SetTop(rectangle, boundingRect.Y);
+
+            _selectionCanvas.Children.Add(rectangle);
+        }
+
+        private void ClearSelection()
+        {
+            var strokes = _inkPresenter.StrokeContainer.GetStrokes();
+            foreach (var stroke in strokes)
+            {
+                stroke.Selected = false;
+            }
+            ClearDrawnBoundingRect();
+        }
+
+        public void ToolButton_Lasso()
+        {
+            // By default, pen barrel button or right mouse button is processed for inking
+            // Set the configuration to instead allow processing these input on the UI thread
+            _inkPresenter.InputProcessingConfiguration.RightDragAction = InkInputRightDragAction.LeaveUnprocessed;
+
+            _inkPresenter.UnprocessedInput.PointerPressed += UnprocessedInput_PointerPressed;
+            _inkPresenter.UnprocessedInput.PointerMoved += UnprocessedInput_PointerMoved;
+            _inkPresenter.UnprocessedInput.PointerReleased += UnprocessedInput_PointerReleased;
+        }
+
+        public void OnCopy()
+        {
+            _inkPresenter.StrokeContainer.CopySelectedToClipboard();
+            Debug.WriteLine("OnCopy: " + _inkPresenter.StrokeContainer);
+        }
+
+        public void OnCut()
+        {
+            _inkPresenter.StrokeContainer.CopySelectedToClipboard();
+            Debug.WriteLine("OnCut: " + _inkPresenter.StrokeContainer);
+            _inkPresenter.StrokeContainer.DeleteSelected();
+            ClearDrawnBoundingRect();
+        }
+
+        public void OnPaste()
+        {
+            if (_inkPresenter.StrokeContainer.CanPasteFromClipboard())
+            {
+                _inkPresenter.StrokeContainer.PasteFromClipboard(new Point(100, 100));
+            }
+            else
+            {
+                Debug.WriteLine("Cannot paste from clipboard.");
+            }
+        }
     }
 }
