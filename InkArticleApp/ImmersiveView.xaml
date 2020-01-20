@@ -50,7 +50,7 @@
 
                     <TextBlock x:Name="processingLabel"
                                VerticalAlignment="Bottom"
-                               HorizontalAlignment="Right"
+                               HorizontalAlignment="Left"
                                Margin="4"/>
 
                     <RelativePanel HorizontalAlignment="Right"

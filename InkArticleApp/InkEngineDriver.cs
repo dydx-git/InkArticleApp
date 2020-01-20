@@ -25,8 +25,16 @@ namespace InkArticleApp
         private TextBlock _animationLabel;
         private bool IsLiveRecognitionOn;
         private Type _callerType;
-        ProcessAnimatorTimer randomTextAnimation { get; }
         RecognitionProcessTimer recognitionTimer { get; }
+
+        private string _animatedWord;
+
+        public string AnimatedWord
+        {
+            get { return _animatedWord; }
+            set { Set(ref _animatedWord, value); }
+        }
+
 
         private InkAnalysisInkDrawing _recognizedShape;
 
@@ -66,7 +74,6 @@ namespace InkArticleApp
             _inkPresenter.StrokeInput.StrokeEnded += StrokeInput_StrokeEnded;
             inkAnalyzer = new InkAnalyzer();
             recognitionTimer = new RecognitionProcessTimer(_inkPresenter, inkAnalyzer);
-            randomTextAnimation = new ProcessAnimatorTimer();
         }
 
         private void StrokeInput_StrokeEnded(InkStrokeInput sender, PointerEventArgs args)
@@ -78,7 +85,7 @@ namespace InkArticleApp
         private void StrokeInput_StrokeStarted(InkStrokeInput sender, PointerEventArgs args)
         {
             recognitionTimer.StopTimer();
-            randomTextAnimation.StartTimer();
+            _animationLabel.Text = "Processing";
             if (!IsLiveRecognitionOn)
             {
                 ClearSelection();
@@ -103,7 +110,6 @@ namespace InkArticleApp
         private async void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
             recognitionTimer.StopTimer();
-            randomTextAnimation.StopTimer();
             if (IsLiveRecognitionOn)
             {
                 inkAnalyzer.AddDataForStrokes(args.Strokes);
@@ -190,6 +196,7 @@ namespace InkArticleApp
             if (NodeText != null && NodeText.Length > 0)
             {
                 recognizedText += " " + NodeText;
+                recognizedText = string.Join(" ", recognizedText.Split(' ').Distinct());
                 recognizedText = recognizedText.Trim();
                 NodeText = null;
                 Debug.WriteLine(recognizedText);

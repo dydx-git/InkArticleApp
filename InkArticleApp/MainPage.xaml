@@ -81,7 +81,7 @@
                             Margin="10"
                             Spacing="10">
                     <TextBlock x:Name="findBoxLabel"
-                               Text="{x:Bind randomTextAnimation.AnimatedWord, Mode=OneWay}"
+                               Text="{x:Bind driver.AnimatedWord, Mode=OneWay}"
                                VerticalAlignment="Center" />
                     <TextBox x:Name="findBox"
                              PlaceholderText="Enter search text"
