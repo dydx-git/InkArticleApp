@@ -14,31 +14,46 @@ namespace InkArticleApp
         InkAnalyzer _inkAnalyzer;
         InkPresenter _inkPresenter;
         private InkAnalysisResult inkAnalysisResults;
-        public InkAnalysisLine Node { get; set; }
+        public RecognizedEntity recognizedEntity;
 
         public RecognitionEngine(InkPresenter inkPresenter, InkAnalyzer inkAnalyzer)
         {
             _inkPresenter = inkPresenter;
             _inkAnalyzer = inkAnalyzer;
+            recognizedEntity = new RecognizedEntity();
         }
 
-        public async Task<string> StartRecognitionAsync()
+        public async Task<RecognizedEntity> StartRecognitionAsync(bool IsDrawingOn)
         {
             inkAnalysisResults = await _inkAnalyzer.AnalyzeAsync();
             if (inkAnalysisResults.Status == InkAnalysisStatus.Updated)
             {
-                Node = Recognize();
-                if (Node != null)
+                if (IsDrawingOn)
                 {
-                    string recognizedText = Node.RecognizedText;
-                    _inkAnalyzer.ClearDataForAllStrokes();
-                    return recognizedText;
+                    recognizedEntity.DrawingNode = RecognizeDrawing();
+                    if (recognizedEntity.DrawingNode != null)
+                    {
+                        string recognizedShape = recognizedEntity.DrawingNode.DrawingKind.ToString();
+                        _inkAnalyzer.ClearDataForAllStrokes();
+                        IsDrawingOn = false;
+                        return recognizedEntity;
+                    }
+                }
+                else
+                {
+                    recognizedEntity.LineNode = RecognizeText();
+                    if (recognizedEntity.LineNode != null)
+                    {
+                        string recognizedText = recognizedEntity.LineNode.RecognizedText;
+                        _inkAnalyzer.ClearDataForAllStrokes();
+                        return recognizedEntity;
+                    }
                 }
             }
             return null;
         }
 
-        public InkAnalysisLine Recognize()
+        public InkAnalysisLine RecognizeText()
         {
             var inkwordNodes =
                     _inkAnalyzer.AnalysisRoot.FindNodes(
@@ -58,6 +73,31 @@ namespace InkArticleApp
             return null; //the program should never reach this line. Only adding this for compiler satisfaction
         }
 
+        public InkAnalysisInkDrawing RecognizeDrawing()
+        {
+            var inkDrawingNodes =
+                _inkAnalyzer.AnalysisRoot.FindNodes(
+                    InkAnalysisNodeKind.InkDrawing);
+
+            if (inkDrawingNodes.Count > 0)
+            {
+                foreach (InkAnalysisInkDrawing node in inkDrawingNodes)
+                {
+                    if (node.DrawingKind == InkAnalysisDrawingKind.Drawing)
+                    {
+                        Debug.Write("Shape not recognized");
+                    }
+                    else
+                    {
+                        InkAnalysisInkDrawing NodeCopy = node;
+                        RemoveAnalyzedStrokes(node);
+                        return NodeCopy;
+                    }
+                }
+            }
+            return null;
+        }
+
         public void RemoveAnalyzedStrokes(InkAnalysisLine node)
         {
             foreach (var strokeId in node.GetStrokeIds())
@@ -66,6 +106,16 @@ namespace InkArticleApp
                     _inkPresenter.StrokeContainer.GetStrokeById(strokeId);
                 stroke.Selected = true;
             }
-        } 
+        }
+
+        public void RemoveAnalyzedStrokes(InkAnalysisInkDrawing node)
+        {
+            foreach (var strokeId in node.GetStrokeIds())
+            {
+                var stroke =
+                    _inkPresenter.StrokeContainer.GetStrokeById(strokeId);
+                stroke.Selected = true;
+            }
+        }
     }
 }

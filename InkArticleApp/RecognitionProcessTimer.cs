@@ -17,13 +17,9 @@ namespace InkArticleApp
         InkAnalyzer _inkAnalyzer;
         RecognitionEngine Engine;
 
-        private string _recognizedText;
+        public bool IsDrawingOn { get; set; }
 
-        public string RecognizedText
-        {
-            get { return _recognizedText; }
-            set { Set(ref _recognizedText, value); }
-        }
+        public RecognizedEntity recognizedEntity;
 
         public int Duration { get; set; }
 
@@ -33,6 +29,7 @@ namespace InkArticleApp
             _inkPresenter = inkPresenter;
             _inkAnalyzer = inkAnalyzer;
             Engine = new RecognitionEngine(_inkPresenter, _inkAnalyzer);
+            recognizedEntity = new RecognizedEntity();
         }
 
         public void StartTimer()
@@ -56,7 +53,8 @@ namespace InkArticleApp
             analysisProcessTimer.Stop();
             if (!_inkAnalyzer.IsAnalyzing)
             {
-                RecognizedText = await Engine.StartRecognitionAsync();
+                recognizedEntity = await Engine.StartRecognitionAsync(IsDrawingOn);
+                IsDrawingOn = false;
             }
             else
             {

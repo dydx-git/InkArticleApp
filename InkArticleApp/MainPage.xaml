@@ -22,12 +22,17 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock Text="PANE CONTENT"
                            x:Name="PaneHeader"
                            Margin="60,12,0,0"
                            Style="{StaticResource BaseTextBlockStyle}" />
+                <Image x:Name="foundObjectImage"
+                       Grid.Row="1"
+                       Height="256"
+                       Margin="0,195,0,0"
+                       VerticalAlignment="Top"
+                       Width="320" />
             </Grid>
         </SplitView.Pane>
         <Grid Background="{ThemeResource SystemControlAcrylicWindowBrush}">
@@ -41,8 +46,8 @@
 
             <InkCanvas x:Name="inkCanvas" />
 
-            <InkToolbar HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
+            <InkToolbar HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
                         TargetInkCanvas="{Binding ElementName=inkCanvas}"
                         Background="{ThemeResource SystemControlAcrylicWindowMediumHighBrush}">
                 <InkToolbarBallpointPenButton Name="penButton" />
@@ -52,23 +57,12 @@
                                            SelectedBrushIndex="0"
                                            MinStrokeWidth="4"
                                            MaxStrokeWidth="10"
-                                           ToolTipService.ToolTip="Calligraphy pen"
-                                           >
+                                           ToolTipService.ToolTip="Calligraphy pen">
                     <SymbolIcon Symbol="{x:Bind CalligraphicPenIcon}" />
                     <InkToolbarCustomPenButton.ConfigurationContent>
                         <InkToolbarPenConfigurationControl />
                     </InkToolbarCustomPenButton.ConfigurationContent>
                 </InkToolbarCustomPenButton>
-                <!--<InkToolbarCustomToolButton x:Name="toolButtonLasso"
-                                            Click="ToolButton_Lasso"
-                                            ToolTipService.ToolTip="Selection tool">
-                    <SymbolIcon Symbol="{x:Bind LassoSelect}" />
-                </InkToolbarCustomToolButton>
-                <InkToolbarCustomToggleButton x:Name="toggleButton"
-                                              Click="Toggle_Custom"
-                                              ToolTipService.ToolTip="Touch Writing">
-                    <SymbolIcon Symbol="{x:Bind TouchWriting}" />
-                </InkToolbarCustomToggleButton>-->
             </InkToolbar>
             <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
@@ -112,7 +106,25 @@
                         <Button.Content>
                             <SymbolIcon Symbol="Pictures" />
                         </Button.Content>
+                        <Button.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control"
+                                                 Key="M" />
+                        </Button.KeyboardAccelerators>
                     </Button>
+                    <AppBarButton x:Name="NavigatePage"
+                                  Click="NavigatePage_Click">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control"
+                                                 Key="N" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton x:Name="ToggleTheme"
+                                  Click="ToggleTheme_Click">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control"
+                                                 Key="H" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
                 </StackPanel>
             </Grid>
         </Grid>

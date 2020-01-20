@@ -13,7 +13,7 @@
     <SplitView x:Name="mainSplitView"
                PaneBackground="{ThemeResource SystemControlAcrylicWindowMediumHighBrush}"
                OpenPaneLength="256"
-               DisplayMode="Inline">
+               DisplayMode="Overlay">
         <SplitView.Pane>
             <Grid Margin="4">
                 <Grid.RowDefinitions>
@@ -24,6 +24,12 @@
                            x:Name="PaneHeader"
                            HorizontalAlignment="Center"
                            Style="{StaticResource BaseTextBlockStyle}" />
+                <Image x:Name="foundObjectImage"
+                       Grid.Row="1"
+                       Height="256"
+                       Margin="0,195,0,0"
+                       VerticalAlignment="Top"
+                       Width="320" />
             </Grid>
         </SplitView.Pane>
         <Canvas x:Name="MainCanvas">
@@ -34,6 +40,7 @@
                                                 x:Name="graphPaper" />
 
                     <Canvas x:Name="selectionCanvas" />
+                    <Canvas x:Name="recognitionCanvas" />
                     <InkCanvas x:Name="inkCanvas"
                                ManipulationMode="Scale"
                                Width="{Binding ElementName=MainCanvas, Path=ActualWidth}"
@@ -44,10 +51,10 @@
                     <TextBlock x:Name="processingLabel"
                                VerticalAlignment="Bottom"
                                HorizontalAlignment="Right"
-                               Margin="4" />
+                               Margin="4"/>
 
                     <RelativePanel HorizontalAlignment="Right"
-                                   VerticalAlignment="Top"
+                                   VerticalAlignment="Bottom"
                                    Margin="8">
                         <InkToolbar x:Name="inkToolbar"
                                     TargetInkCanvas="{Binding ElementName=inkCanvas}"
@@ -72,7 +79,8 @@
                                 <SymbolIcon Symbol="{x:Bind LassoSelect}" />
                             </InkToolbarCustomToolButton>
                             <InkToolbarCustomToggleButton x:Name="toggleButton"
-                                                          ToolTipService.ToolTip="Touch Writing">
+                                                          ToolTipService.ToolTip="Touch Writing"
+                                                          Click="toggleButton_Click">
                                 <SymbolIcon Symbol="{x:Bind TouchWriting}" />
                             </InkToolbarCustomToggleButton>
                         </InkToolbar>
@@ -98,13 +106,16 @@
                                     <SymbolIcon Symbol="Save" />
                                 </Button.Content>
                             </AppBarButton>
-                            
+
                             <AppBarButton x:Name="textImageButton"
                                           AutomationProperties.Name="Find Image"
-                                          Label="Find Image">
-                                <Button.Content>
-                                    <SymbolIcon Symbol="Pictures" />
-                                </Button.Content>
+                                          Label="Find Image"
+                                          Icon="Pictures"
+                                          Click="textImageButton_Click">
+                                <AppBarButton.KeyboardAccelerators>
+                                    <KeyboardAccelerator Modifiers="Control"
+                                                         Key="M" />
+                                </AppBarButton.KeyboardAccelerators>
                             </AppBarButton>
 
                             <CommandBar.SecondaryCommands>
@@ -132,11 +143,35 @@
                                                              Key="V" />
                                     </AppBarButton.KeyboardAccelerators>
                                 </AppBarButton>
-                                <AppBarButton x:Name="ClearButton"
-                                              Icon="Paste">
+                                <AppBarButton x:Name="RecognizeShape"
+                                              Icon="Emoji"
+                                              Click="{x:Bind driver.PassiveRecognizeDrawing}">
                                     <AppBarButton.KeyboardAccelerators>
                                         <KeyboardAccelerator Modifiers="Control"
                                                              Key="Q" />
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
+                                <AppBarButton x:Name="GetShape"
+                                              Icon="Account"
+                                              Click="GetShape_Click">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Modifiers="Control"
+                                                             Key="W" />
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
+                                <AppBarButton x:Name="NavigatePage"
+                                              Icon="Account"
+                                              Click="NavigatePage_Click">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Modifiers="Control"
+                                                             Key="N" />
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
+                                <AppBarButton x:Name="ToggleTheme"
+                                              Click="ToggleTheme_Click">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Modifiers="Control"
+                                                             Key="H" />
                                     </AppBarButton.KeyboardAccelerators>
                                 </AppBarButton>
                             </CommandBar.SecondaryCommands>

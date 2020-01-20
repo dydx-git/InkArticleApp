@@ -27,6 +27,16 @@ namespace InkArticleApp
         private Type _callerType;
         ProcessAnimatorTimer randomTextAnimation { get; }
         RecognitionProcessTimer recognitionTimer { get; }
+
+        private InkAnalysisInkDrawing _recognizedShape;
+
+        public InkAnalysisInkDrawing RecognizedShape
+        {
+            get { return _recognizedShape; }
+            set { Set(ref _recognizedShape, value); }
+        }
+
+
         private string _recognizedText;
 
         public string recognizedText
@@ -69,18 +79,25 @@ namespace InkArticleApp
         {
             recognitionTimer.StopTimer();
             randomTextAnimation.StartTimer();
-            ClearSelection();
-            _inkPresenter.UnprocessedInput.PointerPressed -= UnprocessedInput_PointerPressed;
-            _inkPresenter.UnprocessedInput.PointerMoved -= UnprocessedInput_PointerMoved;
-            _inkPresenter.UnprocessedInput.PointerReleased -= UnprocessedInput_PointerReleased;
+            if (!IsLiveRecognitionOn)
+            {
+                ClearSelection();
+                _inkPresenter.UnprocessedInput.PointerPressed -= UnprocessedInput_PointerPressed;
+                _inkPresenter.UnprocessedInput.PointerMoved -= UnprocessedInput_PointerMoved;
+                _inkPresenter.UnprocessedInput.PointerReleased -= UnprocessedInput_PointerReleased;
+            }
         }
 
         private void InkPresenter_StrokesErased(InkPresenter sender, InkStrokesErasedEventArgs args)
         {
-            ClearSelection();
-            _inkPresenter.UnprocessedInput.PointerPressed -= UnprocessedInput_PointerPressed;
-            _inkPresenter.UnprocessedInput.PointerMoved -= UnprocessedInput_PointerMoved;
-            _inkPresenter.UnprocessedInput.PointerReleased -= UnprocessedInput_PointerReleased;
+            if (!IsLiveRecognitionOn)
+            {
+                ClearSelection();
+                _inkPresenter.UnprocessedInput.PointerPressed -= UnprocessedInput_PointerPressed;
+                _inkPresenter.UnprocessedInput.PointerMoved -= UnprocessedInput_PointerMoved;
+                _inkPresenter.UnprocessedInput.PointerReleased -= UnprocessedInput_PointerReleased;
+            }
+            
         }
 
         private async void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
@@ -92,10 +109,22 @@ namespace InkArticleApp
                 inkAnalyzer.AddDataForStrokes(args.Strokes);
                 ActiveRecognition();
             }
-            else
+        }
+
+        public async void PassiveRecognizeDrawing()
+        {
+            inkAnalyzer.AddDataForStrokes(_inkPresenter.StrokeContainer.GetStrokes());
+            recognitionTimer.IsDrawingOn = true;
+            ActiveRecognition();
+        }
+
+        public InkAnalysisInkDrawing GetRecognizedShape()
+        {
+            if (RecognizedShape != null)
             {
-                inkAnalyzer.AddDataForStrokes(args.Strokes);
+                return RecognizedShape;
             }
+            return null;
         }
 
         private void UnprocessedInput_PointerPressed(InkUnprocessedInput sender, PointerEventArgs args)
@@ -135,6 +164,10 @@ namespace InkArticleApp
             await Task.Delay(800);
             WriteText();
             _inkPresenter.StrokeContainer.DeleteSelected();
+            if (recognitionTimer.recognizedEntity != null)
+            {
+                RecognizedShape = recognitionTimer.recognizedEntity.DrawingNode;
+            }
         }
 
         public async void PassiveRecognition()
@@ -145,11 +178,20 @@ namespace InkArticleApp
 
         private void WriteText()
         {
-            if (recognitionTimer.RecognizedText != null && recognitionTimer.RecognizedText.Length > 0)
+            if (recognitionTimer.recognizedEntity == null)
             {
-                recognizedText += " " + recognitionTimer.RecognizedText;
+                return;
+            }
+            if (recognitionTimer.recognizedEntity.LineNode == null)
+            {
+                return;
+            }
+            string NodeText = (recognitionTimer.recognizedEntity != null) ? recognitionTimer.recognizedEntity.LineNode.RecognizedText : null;
+            if (NodeText != null && NodeText.Length > 0)
+            {
+                recognizedText += " " + NodeText;
                 recognizedText = recognizedText.Trim();
-                recognitionTimer.RecognizedText = null;
+                NodeText = null;
                 Debug.WriteLine(recognizedText);
             }
             else
